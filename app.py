@@ -32,15 +32,17 @@ def login():
     username = data['username']
     password = data['password']
 
-    conn = get_db_connection()
+    conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    cursor.execute('SELECT * FROM users WHERE username=? AND password=?', (username, password))
     user = cursor.fetchone()
     conn.close()
 
-    if user and check_password_hash(user['password'], password):
-        return jsonify({"status": "success", "message": "Login successful."})
-    return jsonify({"status": "fail", "message": "Invalid username or password."})
+    if user:
+        return jsonify({"status": "success", "message": "Login successful"})
+    else:
+        return jsonify({"status": "fail", "message": "Invalid credentials"}), 401
+
 
 @app.route('/donate', methods=['POST'])
 def donate():
